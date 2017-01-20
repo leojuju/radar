@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Monitor</title>
+    <!-- 引入 ECharts 文件 -->
+    <script src="scripts/echarts.min.js"></script>
+    <script src="scripts/stations.js"></script>
+    <script type="text/javascript">
+    	window.onload=function(){
+    		var xmlhttp = createxmlhttp();
+    		xmlhttp.onreadystatechange=function(){
+    			// 指定图表的配置项和数据
+    	        var option = {
+    	            title: {
+    	                text: 'Statistic'
+    	            },
+    	            tooltip: {trigger: 'axis'},
+    	            legend: {   	                
+    	            },
+    	            xAxis: { 
+    	                boundaryGap: false
+    	            },
+    	            yAxis: {},
+    	            series: []
+    	        };
+    			if(xmlhttp.readyState==4 && xmlhttp.status==200)
+    		  	{	
+    				var data=JSON.parse(xmlhttp.responseText);
+					var timeStmps = data["timeStmps"];
+    				option.xAxis.data=timeStmps;
+					var map = data["map"];
+					var topics = [];
+					for(var topic in map){
+    					var list = map[topic];
+    					topics.push(topic);
+    					var serie = {type:'line'};
+    					serie.name=topic;
+    					serie.data=list;
+    					option.series.push(serie);
+    				}
+    				option.legend.data = topics;
+ //   				alert(JSON.stringify(option));
+    		  	}
+    			// 基于准备好的dom，初始化echarts实例
+    	        var myChart = echarts.init(document.getElementById('main'));
+    	        // 使用刚指定的配置项和数据显示图表。
+    	        myChart.setOption(option);
+    		}
+    		xmlhttp.open("GET","http://localhost:8882/radarKafkaMonitorApi/rest/getRecentStatistic",true);
+		xmlhttp.withCredentials=true;
+    		xmlhttp.send();
+    		loadStations();
+    	}
+    </script>
+</head>
+<body>
+	<div id="chart-show">
+		<div id="main" style="width: 600px; height: 400px;"></div>
+	</div>
+	<div id="statistics">
+	</div>
+	<div id="list-div"></div>
+	<div id="other-functions">
+		<button id="realtime" onclick="window.location='downloadlog-realtime.html';">实时监控</button>
+	</div>
+</body>
+</html>

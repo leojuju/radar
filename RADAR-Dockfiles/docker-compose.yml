@@ -1,0 +1,90 @@
+version: '2'
+services:
+  kafka:
+    image: spotify/kafka
+    ports:
+      - "2181:2181"
+      - "9092:9092"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+  
+  radar_taskdistributor:
+    build: AnalysisTaskDistributor/.
+    image: radar_taskdistributor
+    container_name: radar_taskdistributor
+    depends_on:
+      - kafka
+      - radar_htmlanalysis
+    environment:
+      KAFKA_SERVICE_BOOTSTRAPSERVERS: kafka:9092
+  
+  radar_htmlanalysis:
+    build: HtmlAnalysis/.
+    image: radar_htmlanalysis
+    container_name: radar_htmlanalysis
+    depends_on:
+     - kafka
+     - mongodb
+     - radar_imagedp
+    environment:
+      MONGODB_SERVICE_HOST: mongodb
+      MONGODB_SERVICE_PORT: 27017
+      MONGODB_RADAR_DB_SPDATA: radardata_sp
+      KAFKA_SERVICE_BOOTSTRAPSERVERS: kafka:9092
+
+  radar_imagedp:
+    build: DownloadAndProcess/.
+    image: radar_imagedp
+    container_name: radar_imagedp
+    depends_on:
+     - kafka
+     - mongodb
+    environment:
+      MONGODB_SERVICE_HOST: mongodb
+      MONGODB_SERVICE_PORT: 27017
+      MONGODB_RADAR_DB_SPDATA: radardata_sp
+      MONGODB_RADAR_DB_GPDATA: radardata_gp
+      KAFKA_SERVICE_BOOTSTRAPSERVERS: kafka:9092
+
+  radar_monitor:
+    build: Monitor/.
+    image: radar_monitor
+    container_name: radar_monitor
+    depends_on:
+     - kafka
+     - mongodb
+    ports:
+      - "8882:8080"
+    environment:
+      MONGODB_SERVICE_HOST: mongodb
+      MONGODB_SERVICE_PORT: 27017
+      MONGODB_RADAR_DB_SPDATA: radardata_sp
+      MONGODB_RADAR_DB_LOG: radarlogs
+      KAFKA_SERVICE_BOOTSTRAPSERVERS: kafka:9092
+
+  radar_imageapi:
+    build: ImageAccessApi/.
+    image: radar_imageapi
+    container_name: radar_imageapi
+    depends_on:
+     - mongodb
+    ports:
+      - "8881:8080"
+    environment:
+      MONGODB_SERVICE_HOST: mongodb
+      MONGODB_SERVICE_PORT: 27017
+      MONGODB_RADAR_DB_SPDATA: radardata_sp
+      MONGODB_RADAR_DB_GPDATA: radardata_gp
+
+  radar_htmls:
+    build: Nginx4Htmls/.
+    image: radar_htmls
+    container_name: radar_htmls
+    ports:
+      - "8880:80"

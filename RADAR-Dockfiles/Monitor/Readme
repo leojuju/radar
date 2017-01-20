@@ -1,0 +1,5 @@
+需要radarKafkaMonitorApi.war中html文件以及scripts下的js文件中的类似如下代码段:
+xmlhttp.open("GET","http://localhost:8882/radarKafkaMonitorApi/rest/getRecentStatistic",true);
+里的链接localhost:8882为具体的该应用暴露的地址。
+
+然后才可以请求相应的地址获取monitor页面。
