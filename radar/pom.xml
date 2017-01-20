@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>radar</artifactId>
+  <packaging>pom</packaging>
+  
+  <description>radar relative</description>
+  
+  <modules>
+    <module>radarProcessApi</module>
+    <module>radarDownloadLogApi</module>
+    <module>radarDownloadApi</module>
+    <module>radarManager</module>
+    <module>radarUtils</module>
+    <module>radarDownloadManagerByKafka</module>
+    <module>radarHtmlAnalysisByKafka</module>
+    <module>radarKafkaMonitorApi</module>
+    <module>radarImageDownloadByKafka</module>
+    <module>radarImageProcessByKafka</module>
+    <module>radarImageDownloadAndProcessByKafka</module>
+    <module>radarImageAccessApi</module>
+  </modules>
+  <groupId>org.gridvo.leo</groupId>
+  <version>0.0.1-SNAPSHOT</version>
+</project>
