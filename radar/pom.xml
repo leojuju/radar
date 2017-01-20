@@ -7,16 +7,9 @@
   <description>radar relative</description>
   
   <modules>
-    <module>radarProcessApi</module>
-    <module>radarDownloadLogApi</module>
-    <module>radarDownloadApi</module>
-    <module>radarManager</module>
-    <module>radarUtils</module>
     <module>radarDownloadManagerByKafka</module>
     <module>radarHtmlAnalysisByKafka</module>
     <module>radarKafkaMonitorApi</module>
-    <module>radarImageDownloadByKafka</module>
-    <module>radarImageProcessByKafka</module>
     <module>radarImageDownloadAndProcessByKafka</module>
     <module>radarImageAccessApi</module>
   </modules>
