@@ -1,0 +1,114 @@
+<HTML>
+<meta charset="utf-8">
+<title>LatAndLongt</title>
+<h1>LatAndLongt</h1>
+<hr>
+<p>
+<h2>简述</h2>
+<p>用来描述经纬度的类,属性包含经度和纬度,采用角度形式储存。</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>属性</h2>
+<p>public double latitude:纬度</p>
+<p>public double longtitude:经度</p>
+</p>
+</hr>
+
+
+<hr>
+<p>
+<h2>LatAndLongt<a name="unsimpefy"/></h2>
+<p><h4>参数:</h4>
+<p>Vector v:地心到某点的向量。(所采用坐标系参照<a href="直角坐标系.html">直角坐标系</a>)</p>
+</p>
+<p><h4>返回值:</h4>构造函数无返回值。</p>
+<p><h4>描述:</h4>
+<p>排除0向量和v为null的情况。</p>
+<p>计算方法如图:</p>
+<img src="Projection5.JPG" height=300 width=400/>
+</p>
+</p>
+</hr>
+
+
+<hr>
+<p>
+<h2>getXYZ</h2>
+<p><h4>参数:</h4>无</p>
+<p><h4>返回值:</h4>XYZ,<a href="直角坐标系.html">直角坐标系</a>坐标值</p>
+<p><h4>描述:</h4>
+<p>返回地球表面某点在<a href="直角坐标系.html">直角坐标系</a>中的坐标值。</p>
+<p>
+<img src="Projection6.JPG" height=300 width=400/>
+<img src="Projection7.JPG" height=300 width=400/>
+<img src="Projection8.JPG" height=300 width=400/>
+</p>
+
+</p>
+</hr>
+
+
+
+
+<hr>
+<p>
+<h2>getNorthVector</h2>
+<p><h4>参数:</h4>无</p>
+<p><h4>返回值:</h4>Vector</p>
+<p><h4>描述:</h4>返回地球表面某点在<a href="直角坐标系.html">直角坐标系</a>中的正北方向单位向量,参照上三图。
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>getEastVector</h2>
+<p><h4>参数:</h4>无</p>
+<p><h4>返回值:</h4>Vector</p>
+<p><h4>描述:</h4>返回地球表面某点在<a href="直角坐标系.html">直角坐标系</a>中的正东方向单位向量,参照上三图。
+</p>
+</hr>
+
+
+<hr>
+<p>
+<h2>getLALFromDistance</h2>
+<p><h4>参数:</h4>double eastLineD,double northLineD</p>
+<p><h4>返回值:</h4>LatAndLongt</p>
+<p><h4>描述:</h4>获取在以该点为切点的切平面上沿正东直线方向eastLineD(km)距离再沿正北直线方向northLineD(km)距离的点的经纬度坐标。
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>getLatCircleRadiu</h2>
+<p><h4>参数:</h4>无</p>
+<p><h4>返回值:</h4>double</p>
+<p><h4>描述:</h4>返回该点所在纬线圈的半径。
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>getLongtChange1KmAlongLat</h2>
+<p><h4>参数:</h4>无</p>
+<p><h4>返回值:</h4>double</p>
+<p><h4>描述:</h4>返回沿该点所在纬线圈的行进1km的经度变化量。
+</p>
+</hr>
+
+
+<hr>
+<p>
+<h2>toDegreeString</h2>
+<p><h4>参数:</h4>无</p>
+<p><h4>返回值:</h4>String</p>
+<p><h4>描述:</h4>返回经纬度的角分秒的字符串表示。
+</p>
+</hr>
+
+
+
+</HTML>

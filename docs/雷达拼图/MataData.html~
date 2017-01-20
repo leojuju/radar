@@ -1,0 +1,20 @@
+<HTML>
+<meta charset="utf-8">
+<title>MataData</title>
+<h1>MataData</h1>
+<hr>
+<p>
+<h2>简述</h2>
+<p>存储图像相关的规格以及地理信息。</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>属性</h2>
+<p>public static final Map<String,MataData> mataDatas</p>
+<p>public static final String MataDataFile="properties/stationsMatadatas"; 存放配置文件所在位置。</p>
+</p>
+</hr>
+
+</HTML>

@@ -1,0 +1,140 @@
+<HTML>
+<meta charset="utf-8">
+<title>GridProcess</title>
+<h1>GridProcess</h1>
+<hr>
+<p>
+<h2>简述</h2>
+<p></p>
+</p>
+</hr>
+
+
+<hr>
+<p>
+<h2>combine<a name="combine"/></h2>
+<p><h4>参数:</h4>
+<p>byte[] targetMatrix或byte[][] targetMatrix:底图。</p>
+<p>MataData tarMataData:底图的图像规格与地理信息。</p>
+<p>byte[] srcMatrix:某一站点雷达图。</p>
+<p>MataData srcMataData:某一站点雷达图的图像规格与地理信息。</p>
+</p>
+<p><h4>返回值:</h4>无,参数值自动返回。</p>
+<p><h4>描述:</h4>
+<p>将某一站点雷达图srcMataData拼和到底图targetMatrix上去。</p>
+<p>首先,获取雷达图在底图的重合区域。(startX,startY,endX,endY,注意这些都是指在底图中的坐标。)</p>
+<p>其次,扫描重合区域,获取该像素在原来雷达图中的位置(x,y)。</p>
+<p>最后,比较该像素在底图的反射值和原来雷达图中的反射值,保留二者的<span style="color:red">最大值</span>。如果是没有数据,由于-1最小,所以可以被任何大于它的值取代。</p>
+<p>注意:我在重叠区域采用的是取最大值。当然还有其他的方法。</p>
+<p><h4>代码:</h4>
+<pre>
+	public static void combine(byte[] targetMatrix,MataData tarMataData,byte[] srcMatrix,MataData srcMataData){
+		
+		//取得范围
+		int startX = (int)Math.ceil((srcMataData.startLAL.longtitude-tarMataData.startLAL.longtitude)/tarMataData.longtScale);
+		int startY = (int)Math.ceil((-srcMataData.startLAL.latitude+tarMataData.startLAL.latitude)/tarMataData.latScale);
+		int endX = (int)Math.floor((srcMataData.endLAL.longtitude-tarMataData.startLAL.longtitude)/tarMataData.longtScale);
+		int endY = (int)Math.floor((-srcMataData.endLAL.latitude+tarMataData.startLAL.latitude)/tarMataData.latScale);
+
+		for (int i = (startY&lt0?0:startY); i < (endY+1>tarMataData.h?tarMataData.h:(endY+1)); i++) {
+			for (int j = (startX&lt0?0:startX); j < (endX+1>tarMataData.w?tarMataData.w:(endX+1)); j++) {
+				int idx = i*tarMataData.w+j;
+				LatAndLongt lal = new LatAndLongt(tarMataData.startLAL.latitude-i*tarMataData.latScale, 
+						tarMataData.startLAL.longtitude+j*tarMataData.longtScale);
+				int x = (int)Math.round((lal.longtitude-srcMataData.startLAL.longtitude)/srcMataData.longtScale);
+				int y = (int)Math.round((-lal.latitude+srcMataData.startLAL.latitude)/srcMataData.latScale);
+				int idx2 = y*srcMataData.w+x;
+				if(targetMatrix[idx]&ltsrcMatrix[idx2]){
+					targetMatrix[idx]=srcMatrix[idx2];
+				}
+			}
+		}
+		
+	}
+</pre>
+</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>subSample<a name="subSample"/></h2>
+<p><h4>参数:</h4>
+<p>byte[] chinaDetailMatrix:底图。</p>
+<p>MataData tarMataData:底图的图像规格与地理信息。</p>
+<p>int scale:缩小倍数。</p>
+</p>
+<p><h4>返回值:</h4>
+byte[]:缩小后图像。
+传进来的tarMataData会受到修改。
+</p>
+<p><h4>描述:</h4>
+<p>将底图缩小到1/scale倍。</p>
+<p>首先,获取缩小后图像空白底图。</p>
+<p>其次,扫描空白底图,获取该像素点在原图中相应位置的scale*scale区域范围内的反射率<span style="color:red">中值</span>(<a href="#getSurroundingMidValue">getSurroundingMidValue</a>),赋值给该像素点。</p>
+<p>最后,修改tarMataData,以适应新图。</p>
+<p>注意:我采用的取中值法。当然还有其他的方法。</p>
+<p><h4>代码:</h4>
+<pre>
+	public static byte[] subSample(byte[] chinaDetailMatrix, MataData tarMataData, int scale) {
+		int w =tarMataData.w;
+		int h = tarMataData.h;
+		int rw = (w+scale-1)/scale;
+		int rh = (h+scale-1)/scale;
+		byte[] result = new byte[rw*rh];
+		for (int i = 0; i &lt rh; i++) {
+			for (int j = 0; j &lt rw; j++) {
+				result[i*rw+j] = getSurroundingMidValue(chinaDetailMatrix,j*scale,i*scale,scale,w,h);
+			}
+		}
+		tarMataData.h=rh;
+		tarMataData.w=rw;
+		tarMataData.latScale *=scale;
+		tarMataData.longtScale *=scale;
+		return result;
+	}
+</pre>
+</p>
+</p>
+</hr>
+
+
+<hr>
+<p>
+<h2>getSurroundingMidValue<a name="getSurroundingMidValue"/></h2>
+<p><h4>参数:</h4>
+<p>byte[] chinaDetailMatrix:底图。</p>
+<p>int x:像素点x坐标。</p>
+<p>int y:像素点y坐标。</p>
+<p>int scale:搜寻范围。</p>
+<p>int w:底图宽度。</p>
+<p>int h:底图高度。</p>
+</p>
+<p><h4>返回值:</h4>
+byte:反射率值。
+</p>
+<p><h4>描述:</h4>
+<p>获取chinaDetailMatrix中(x,y)位置周围的scale*scale区域范围内的反射率<span style="color:red">中值</span>。</p>
+<p><h4>代码:</h4>
+<pre>
+private static byte getSurroundingMidValue(byte[] chinaDetailMatrix, int x, int y, int scale, int w , int h) {
+		List&ltByte&gt valList = new ArrayList&ltByte&gt();
+		int r = scale/2;
+		for (int i = 0; i &lt scale; i++) {
+			for (int j = 0; j &lt scale; j++) {
+				int _x = x-r+j;
+				int _y = y-r+i;
+				if(_x&gt=0&&_xltw&&_y&gt=0&&_y&lth){
+					valList.add(chinaDetailMatrix[_y*w+_x]);
+				}
+			}
+		}
+		Collections.sort(valList);
+		return valList.get(valList.size()/2);
+	}
+</pre>
+</p>
+</p>
+</hr>
+
+</HTML>

@@ -1,0 +1,23 @@
+<HTML>
+<meta charset="utf-8">
+<title>Station</title>
+<h1>Station</h1>
+<hr>
+<p>
+<h2>简述</h2>
+<p>用来储存站点的信息。注意:根据不同工程的需要，属性值会有所删增。</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>属性</h2>
+<p>public String name:站点名。</p>
+<p>public String province:站点所在省份。</p>
+<p>public String stationID:站点ID。</p>
+<p>public LatAndLongt name:站点经纬度。</p>
+<p>public int range:站点最大扫描范围。</p>
+
+</p>
+</hr>
+</HTML>

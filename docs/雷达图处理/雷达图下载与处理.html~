@@ -1,0 +1,116 @@
+<HTML>
+<meta charset="utf-8">
+<title>雷达图的下载与处理</title>
+<h1>雷达图的下载与处理</h1>
+<hr>
+<p>
+<h2>CONTENT</h2>
+<p><a href="#part1">一.获取雷达图</a><p/>
+<p><a href="#part2">二.雷达图简化处理</a><p/>
+<p><a href="#part3">三.获取数字信息</a><p/>
+<p><a href="#part4">四.地理转换</a><p/>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>一.获取雷达图<a name="part1"/></h2>
+<p>1.获取站点源代码。例如福州站:<a href="http://www.nmc.cn/publish/radar/fuzhou.html">http://www.nmc.cn/publish/radar/fuzhou.html</a>。</p>
+<p>2.分析站点源代码,获取雷达图链接。有两种雷达图链接:</p>
+<blockcode>http://image.nmc.cn/product/2017/01/15/RDCP/medium/SEVP_AOC_RDCP_SLDAS_EBREF_AZ9591_L88_PI_20170115131200000.PNG</blockcode>
+<blockcode>http://image.nmc.cn/product/2017/01/15/RDCP/small/SEVP_AOC_RDCP_SLDAS_EBREF_AZ9591_L88_PI_20170115131200000.PNG</blockcode>
+<p>带medium的是不同站点会有多种情况，大多数站点是经过放大加平滑处理，像素值变得多样，不利于处理。</p>
+<p>带small的是缩略图。</p>
+<p>所以我们要找到它们的原始图---将中间的small／或medium／去掉即可得到。即</p>
+<blockcode>http://image.nmc.cn/product/2017/01/15/RDCP/SEVP_AOC_RDCP_SLDAS_EBREF_AZ9591_L88_PI_20170115131200000.PNG</blockcode>
+<p>3.下载对应链接的雷达图。</p>
+<p>所有站点获取的图片规格要么是480*640要么是512*672。</p>
+<p>得到的原始图如下（福州480*640）:</p>
+<img src="RadarImage-Fuzhou.PNG" />
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>二.雷达图简化处理<a name="part2"/></h2>
+<p>1.用gimp观察以下原始图,可以知道:</p>
+<img src="RadarImage-Changzhou.PNG" />
+<p>雷达图部分为480＊480（或512＊512）的左边部分。</p>
+<p>表示反射率的只有16种像素:</p>
+<pre>				case 0xffd8d8d8:
+				case 0xff0000f6:
+				case 0xff01a0f6:
+				case 0xff00ecec:
+				case 0xff01ff00:
+				case 0xff00c800:
+				case 0xff019000:
+				case 0xffffff00:
+				case 0xffe7c000:
+				case 0xffff9000:
+				case 0xffff0000:
+				case 0xffd60000:
+				case 0xffc00000:
+				case 0xffff00f0:
+				case 0xff780084:
+				case 0xffad90f0:
+</pre>
+<p>地图线和地名会遮挡反射率像素。而表示地图线和地面的像素也只有单调的几种。（除了沧州站，不知为何“任丘”两个字有多种像素值，考虑到成本与收益不相称就不做特殊处理，所以我处理的图中沧州站有时会看“任丘”二字的空缺。）</p>
+<pre>				case 0xff206060:
+				case 0xff000080:
+				case 0xff73dfff:
+				case 0xff00a9e6:
+				case 0xff00c5ff:
+				case 0xff4e4e4e:
+				case 0xff097208:
+				case 0xff098008:
+				case 0xff04b603:
+					
+				case 0xffaaaaaa:
+				case 0xffa8a8a8:
+				case 0xff686868:
+				case 0xffb2b2b2:
+</pre>
+<p>中间有蓝色十字出现在固定的地方,也会遮挡反射率像素。</p>
+<p>地图上其他像素基本不会与上述像素重合。</p>
+<p>2.首先，抽取出(0～480)＊(0～480)的区域的像素。</p>
+<p>3.过滤掉以上提及像素以外的像素，这样就可以把背景和地形过滤掉，只留下反射率和地图线以及地名。(参照<a href="RadarUtils.html#filterMatrix">RadarUtils.filterMatrix方法</a>。)</p>
+<p>中间蓝色十字，因为出现在固定地点，且遮挡反射率像素，在过滤前我将它直接换成地图线/地名一样的像素，在下一步一起处理。(例图较早，中间没有，看上面的福州图。)</p>
+<p>结果如下:</p>
+<img src="RadarImage-Changzhou-filterMatrix.PNG" />
+<p>4.然后，我们将地图线/地名替换成周围区域中出现最多的反射率像素(依次寻找3*3,5*5,7*7...直到找到)。这样就将地图线／地名去掉了(参照<a href="RadarUtils.html#substractLines">RadarUtils.substractLines方法</a>)。结果如下:</p>
+<img src="RadarImage-Changzhou-substractLines.PNG" />
+<p>5.最后我们可以将图像像素映射为简单的取值范围为0~15的byte数组存储(参照<a href="RadarUtils.html#simplefy">RadarUtils.simplefy</a>方法)。存储前将数组用GZip算法压缩,可以大大节省存储空间。我将这种图像存储与mongodb的radardata_sp数据库。</p>
+</p>
+</hr>
+
+
+<hr>
+<p>
+<h2>三.获取数字信息<a name="part3"/></h2>
+<img src="RadarImage-Fuzhou-Digits.PNG" width=474 height=201/>
+<p>原图的右边有图像的时间,范围以及仰角信息。都是数字信息且出现在图像的固定位置(可以利用gimp查看,或参照<a href="RadarUtils.html#getDigitPixels">RadarUtils.getDigitPixels</a>方法,注意区分480*640和512*672两种情况)。</p>
+<p>可以获取每个数字11*7的像素图,将其二值简化表示(<a href="RadarUtils.html#simplefyDigits">RadarUtils.simplefyDigits</a>),用于下一步识别。</p>
+<p>其实可以发现每个数字出现的形态很单一(可以多次取样求证)，所以识别可以不用机器学习的方法（虽然我是用了，但感觉没必要，参照infrastruction.digitRecognize包和<a href="RadarUtils.html#getInfoInStrings">RadarUtils.getInfoInStrings</a>方法）;可以直接比较两个数组，比如比较两个数组向量的乘积(越大表示越相近) ;甚至如果每个数字就一个形态，那就可以直接建立字典查询。</p>
+<img src="digits/RadarImage-Digit-0.PNG" width=70 height=110/>
+<img src="digits/RadarImage-Digit-1.PNG" width=70 height=110/>
+<img src="digits/RadarImage-Digit-2.PNG" width=70 height=110/>
+<img src="digits/RadarImage-Digit-3.PNG" width=70 height=110/>
+<img src="digits/RadarImage-Digit-4.PNG" width=70 height=110/>
+<img src="digits/RadarImage-Digit-5.PNG" width=70 height=110/>
+<img src="digits/RadarImage-Digit-6.PNG" width=70 height=110/>
+<img src="digits/RadarImage-Digit-7.PNG" width=70 height=110/>
+<img src="digits/RadarImage-Digit-8.PNG" width=70 height=110/>
+<img src="digits/RadarImage-Digit-9.PNG" width=70 height=110/>
+<p>注意不同图仰角部分会有不同的长度，灵活处理;如果不需要仰角信息，可以不处理。</p>
+</p>
+</hr>
+
+
+<hr>
+<p>
+<h2>四.地理转换<a name="part4"/></h2>
+<p>参见<a href="地理转换.html">雷达图的地理转换</a>。</p>
+</p>
+</hr>
+
+</HTML>

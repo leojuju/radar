@@ -1,0 +1,572 @@
+<HTML>
+<meta charset="utf-8"/>
+
+<hr>
+<p>
+<h2>geoProcess<a name="geoProcess"/></h2>
+<p>
+<h4>参数:</h4>
+<p>byte[] radarBytes:雷达原图的简化表示。</p>
+<p>int dim:雷达原图的大小。</p>
+<p><a href="ImageInfo.html">ImageInfo</a> info:雷达原图的图像信息,这里要用到info.range,即雷达图的扫描范围。因为每个站点每张图的扫描范围会不同,所以要根据具体图像信息获取。而<a href="Station.html">Station</a>中的range指的是最大的扫描范围,是为了确立图像规格时使用。</p>
+<p>String stationName:站点名称,为了获取站点相关的图像规格或地理信息用。</p>
+</p>
+<p><h4>返回值:</h4>byte[] transformedMatrix</p>
+<p>
+<h4>描述:</h4>
+<p>雷达原图是每个相邻像素间距离相差一致的图,我们要将其转换为每个相邻像素之间横向经度差一致,纵向纬度差一致的新图。</p>
+<p>Pixel center:雷达原图的中心点(即站点所在位置)的像素坐标。</p>
+</p>
+<p>LatAndLongt centerLAL:雷达原图的中心点的经纬度坐标。</p>
+<p>double scale:雷达原图的每个相邻像素间距离。</p>
+<p>double dLat:新图的单位纵向纬度差。</p>
+<p>double dLongt:新图的单位横向经度差。</p>
+<p>byte[] transformedMatrix:新图的简化表示。</p>
+<p>具体处理过程还是看<a href="#transformToLalGrid">transformToLalGrid</a>方法。</p>
+</p>
+<p><h4>代码:</h4>
+<pre>
+</pre>
+</p>
+</p>
+</hr>
+
+
+<hr>
+<p>
+<h2>transformToLalGrid<a name="transformToLalGrid"/></h2>
+<p>
+	<h4>参数:</h4>
+	<p>byte[] matrix:雷达原图的简化表示。</p>
+	<p>Pixel center:雷达原图的中心点(即站点所在位置)的像素坐标。</p>
+	<p>LatAndLongt centerLAL:雷达原图的中心点的经纬度坐标。</p>
+	<p>double scale:雷达原图的每个相邻像素间距离。</p>
+	<p>double dLat:新图的单位纵向纬度差。</p>
+	<p>double dLongt:新图的单位横向经度差。</p>
+	<p>int dim:雷达原图的大小。</p>
+	<p>int range:雷达原图的扫描范围。</p>
+</p>
+<p><h4>返回值:</h4>byte[] result,新图的简化表示。</p>
+<p><h4>描述:</h4>
+<p>扫描新图的每一个像素点,然后去原图找到对应的像素点,赋值,即可得到新图。</p>
+<p>LatAndLongt point:新图上某一像素点的经纬度。</p>
+<p>Pixel newPixel:新图上某一像素点在原图中对应的像素点的相对与中心点的像素偏移量。获取方法参照<a href="GeoUtils.html#getPixelLocationRelativeTo">GeoUtils.getPixelLocationRelativeTo</a>。</p>
+<p>int x:新图上某一像素点在原图中对应的像素点的x坐标。</p>
+<p>int y:新图上某一像素点在原图中对应的像素点的y坐标。</p>
+<p>double d:新图上某一像素点在原图中对应的像素点的到中心点的距离。</p>
+</p>
+<p><h4>代码:</h4>
+<pre>
+</pre>
+</p>
+</p>
+</hr>
+
+
+<hr>
+<p>
+<h2>unsimplefy<a name="unsimplefy"/></h2>
+<p><h4>参数:</h4>
+<p>byte[][] matrix或byte[] matrix:图像的简化表示。</p>
+<p>int w:图像的宽。</p>
+<p>int h:图像的高。</p>
+</p>
+<p><h4>返回值:BufferedImage,图像的具体表示。</h4></p>
+<p><h4>描述:</h4>
+</p>
+<p><h4>代码:</h4>
+<pre>
+public static BufferedImage unsimplefy(byte[] matrix,int w,int h){
+		BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		for (int i = 0; i < h; i++) {
+			for (int j = 0; j < w; j++) {
+				int index=i*w+j;
+				byte t=matrix[index];
+				int r=0;
+				switch(t){
+//				case -1:
+				case 0:
+					r=0;
+					break;
+				case 1:
+					r=0xff0000f6;
+					break;
+				case 2:
+					r=0xff01a0f6;
+					break;
+				case 3:
+					r=0xff00ecec;
+					break;
+				case 4:
+					r=0xff01ff00;
+					break;
+				case 5:
+					r=0xff00c800;
+					break;
+				case 6:
+					r=0xff019000;
+					break;
+				case 7:
+					r=0xffffff00;
+					break;
+				case 8:
+					r=0xffe7c000;
+					break;
+				case 9:
+					r=0xffff9000;
+					break;
+				case 10:
+					r=0xffff0000;
+					break;
+				case 11:
+					r=0xffd60000;
+					break;
+				case 12:
+					r=0xffc00000;
+					break;
+				case 13:
+					r=0xffff00f0;
+					break;
+				case 14:
+					r=0x780084;
+					break;
+				case 15:
+					r=0xffad90f0;
+					break;
+				}
+				image.setRGB(j, i, r);
+			}
+		}
+		return image;
+	}
+</pre>
+</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>simplefy<a name="simplefy"/></h2>
+<p><h4>参数:</h4>
+<p>int[] matrix:雷达图的具体像素表示。</p>
+</p>
+<p><h4>返回值:</h4>byte[],雷达图的简化表示。</p>
+<p><h4>描述:</h4>
+将图像像素映射为简单的取值范围为0~15的byte数组。
+</p>
+<p><h4>代码:</h4>
+<pre>
+public static byte[] simplefy(int[] matrix){
+		byte[] b = new byte[matrix.length];		
+		for (int i = 0; i < matrix.length; i++) {
+				int t= matrix[i];
+				switch(t){
+				case 0xffd8d8d8:
+					b[i]=0;
+					break;
+				case 0xff0000f6:
+					b[i]=1;
+					break;
+				case 0xff01a0f6:
+					b[i]=2;
+					break;
+				case 0xff00ecec:
+					b[i]=3;
+					break;
+				case 0xff01ff00:
+					b[i]=4;
+					break;
+				case 0xff00c800:
+					b[i]=5;
+					break;
+				case 0xff019000:
+					b[i]=6;
+					break;
+				case 0xffffff00:
+					b[i]=7;
+					break;
+				case 0xffe7c000:
+					b[i]=8;
+					break;
+				case 0xffff9000:
+					b[i]=9;
+					break;
+				case 0xffff0000:
+					b[i]=10;
+					break;
+				case 0xffd60000:
+					b[i]=11;
+					break;
+				case 0xffc00000:
+					b[i]=12;
+					break;
+				case 0xffff00f0:
+					b[i]=13;
+					break;
+				case 0xff780084:
+					b[i]=14;
+					break;
+				case 0xffad90f0:
+					b[i]=15;
+					break;
+				}
+		}
+		return b;
+	}
+</pre>
+</p>
+</p>
+</hr>
+
+
+<hr>
+<p>
+<h2>filterMatrix<a name="filterMatrix"/></h2>
+<p><h4>参数:</h4>
+<p>int[] matrix:雷达图的具体像素表示。</p>
+<p>int w:雷达图的宽。</p>
+<p>int h:雷达图的高。</p>
+</p>
+<p><h4>返回值:</h4>int[],雷达图部分图像的经过过滤后的具体像素表示。</p>
+<p><h4>描述:</h4>
+<p>过滤掉除了反射率和地图线以及地名以外的其他像素。用反射率为0的像素来取代。中间蓝色十字，因为出现在固定地点，且遮挡反射率像素，在过滤前我将它直接换成地图线/地名一样的像素，在下一步一起处理。</p>
+</p>
+<p><h4>代码:</h4>
+<pre>
+public static int[] filterMatrix(int[] matrix, int w, int h){
+		//去掉中间十字
+		int midy = h/2-1;
+		int midx =w/2;
+		for (int i = -4; i < 5; i++) {
+			for (int j = -4; j < 5; j++) {
+				if(i==0||j==0){
+					matrix[(i+midy)*w+(j+midx)]=0xffaaaaaa;
+				}
+			}
+		}
+		
+		for (int i = 0; i < h; i++) {
+			for (int j = 0; j < w; j++) {
+				int index = i * w + j;
+				int t = matrix[index];
+				switch (t) {
+				case 0xffd8d8d8:
+				case 0xff0000f6:
+				case 0xff01a0f6:
+				case 0xff00ecec:
+				case 0xff01ff00:
+				case 0xff00c800:
+				case 0xff019000:
+				case 0xffffff00:
+				case 0xffe7c000:
+				case 0xffff9000:
+				case 0xffff0000:
+				case 0xffd60000:
+				case 0xffc00000:
+				case 0xffff00f0:
+				case 0xff780084:
+				case 0xffad90f0:
+					
+				case 0xff206060:
+				case 0xff000080:
+				case 0xff73dfff:
+				case 0xff00a9e6:
+				case 0xff00c5ff:
+				case 0xff4e4e4e:
+				case 0xff097208:
+				case 0xff098008:
+				case 0xff04b603:
+					
+				case 0xffaaaaaa:
+				case 0xffa8a8a8:
+				case 0xff686868:
+				case 0xffb2b2b2:
+					break;
+				default:
+					matrix[index] = 0xffd8d8d8;
+					break;
+				}
+			}
+		}
+		return matrix;
+	}
+</pre>
+</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>substractLines<a name="substractLines"/></h2>
+<p><h4>参数:</h4>
+<p>int[] matrix:过滤后的雷达图的具体像素表示。</p>
+<p>int w:雷达图的宽。</p>
+<p>int h:雷达图的高。</p>
+</p>
+<p><h4>返回值:</h4>int[],雷达图部分图像的经过去地图线/地名后的具体像素表示。</p>
+<p><h4>描述:</h4>
+<p>扫描全图,将地图线/地名的像素替换成其周围区域中出现最多的反射率像素(依次寻找3*3,5*5,7*7...直到找到,参照<a href="#getMaxSurrounding">getMaxSurrounding</a>方法),这样就将地图线／地名去掉了。</p>
+</p>
+<p><h4>代码:</h4>
+<pre>
+public static int[] substractLines(int[] matrix, int w, int h) {
+		int[] temp = Arrays.copyOf(matrix, matrix.length);
+		for (int i = 0; i < h; i++) {
+			for(int j=0;j< w;j++){
+				int index=i*w+j;
+				int t=matrix[index];
+				switch(t){
+					case 0xff206060:
+					case 0xff000080:
+					case 0xff73dfff:
+					case 0xff00a9e6:
+					case 0xff00c5ff:
+					case 0xff4e4e4e:
+					case 0xff097208:
+					case 0xff098008:
+					case 0xff04b603:
+						
+					case 0xffaaaaaa:
+					case 0xffa8a8a8:
+					case 0xff686868:
+					case 0xffb2b2b2:
+						int result=0;
+						int scale=1;
+						while( (result=getMaxSurrounding(temp,i,j,w,h,scale))==0){
+							scale++;
+						}
+						matrix[index]=result;
+						break;
+				}
+			}
+		}
+		return matrix;
+	}
+</pre>
+</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>getMaxSurrounding<a name="getMaxSurrounding"/></h2>
+<p><h4>参数:</h4>
+<p>int[] matrix:过滤后的雷达图的具体像素表示。</p>
+<p>int w:雷达图的宽。</p>
+<p>int h:雷达图的高。</p>
+<p>int i:像素点的y坐标(纵向坐标)。</p>
+<p>int j:像素点的x坐标(横向坐标)。</p>
+<p>int scale:确定搜索范围。</p>
+</p>
+<p><h4>返回值:</h4>int,最多的反射率像素值</p>
+<p><h4>描述:</h4>检查(raw=i,col=j)处像素点周围(2*scale+1)*(2*scale+1)(排除自身)区域范围内的最多的反射率像素值。
+</p>
+<p><h4>代码:</h4>
+<pre>
+public static int getMaxSurrounding(int[] matrix, int i, int j,int w,int h, int scale) {
+		
+		Map<Integer,Integer> colormap = new HashMap<Integer,Integer>();
+		for (int k1 = -scale; k1 < scale+1; k1++) {
+			for (int k2 = -scale; k2 < scale+1; k2++) {
+				int a =i+k1;
+				int b=j+k2;
+				if(a>=0&&a<h&&b>=0&&b<w){
+					int color = matrix[a*w+b];
+					//排除地图线和地名对应的像素颜色
+					switch(color){
+					//gif
+					case 0xff206060:
+					case 0xff000080:
+					//png
+					case 0xff73dfff:
+					case 0xff00a9e6:
+					case 0xff00c5ff:
+					case 0xff4e4e4e:
+					//地名中间的点	
+					case 0xff097208:
+					case 0xff098008:
+					case 0xff04b603:
+						
+					case 0xffaaaaaa:
+					case 0xffa8a8a8:
+					case 0xff686868:
+					case 0xffb2b2b2:
+						break;
+					default :
+						if(colormap.containsKey(color)){
+							colormap.put(color, colormap.get(color)+1);
+						}else{
+							colormap.put(color, 1);
+						}
+						break;
+					}
+				}
+			}
+		}
+		Set<Integer> keys = colormap.keySet();
+		int maxKey=0;
+		int maxValue=0;
+		for(Integer key:keys){
+			int value =colormap.get(key);
+			if(value > maxValue){
+				maxKey=key;
+				maxValue=value;
+			}
+		}
+		return maxKey;
+	}
+</pre>
+</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>getDigitPixels<a name="getDigitPixels"/></h2>
+<p><h4>参数:</h4>
+<p>BufferedImage image:原始的雷达图像,包含左边的雷达图显示部分,和右边的图像信息部分。</p>
+</p>
+<p><h4>返回值:</h4>int[],图像信息部分所有的数字图的具体像素表示按顺序组合成的数组。</p>
+<p><h4>描述:</h4>
+获取数字信息,即时间信息以及数据范围相关的像素。
+每个数字是由11*7的矩阵组成。这里将矩阵按每行扁平化储存。
+数字存储的顺序依次为(括号内为个数):年(4),月(2),日(2),时(2),分(2),秒(2),数据范围(3),仰角(6)。
+</p>
+<p><h4>代码:</h4>
+<pre>
+public static int[] getDigitPixels(BufferedImage image){
+		int xStart =549;
+		int yStart= 49;
+		if(image.getHeight()==512){
+			xStart=581;
+		}
+		int w=7;
+		int h=11;
+		int[] buf = new int[23*w*h];
+		//年月日
+		for (int i = 0; i < 4; i++) {
+			image.getRGB((w+1)*i+xStart, 0+yStart, w, h, buf, i*h*w, w);
+		}
+		for (int i = 0; i < 2; i++) {
+			image.getRGB(40+(w+1)*i+xStart, 0+yStart, w, h, buf, (4+i)*h*w, w);
+		}
+		for (int i = 0; i < 2; i++) {
+			image.getRGB(64+(w+1)*i+xStart, 0+yStart, w, h, buf, (6+i)*h*w, w);
+		}
+		//时分秒
+		for (int i = 0; i < 2; i++) {
+			image.getRGB((w+1)*i+xStart, 15+yStart, w, h, buf,(8+i)*h*w, w);
+		}
+		for (int i = 0; i < 2; i++) {
+			image.getRGB(24+(w+1)*i+xStart, 15+yStart, w, h, buf, (10+i)*h*w, w);
+		}
+		for (int i = 0; i < 2; i++) {
+			image.getRGB(48+(w+1)*i+xStart, 15+yStart, w, h, buf, (12+i)*h*w, w);
+		}
+		//数据范围
+		for (int i = 0; i < 3; i++) {
+			image.getRGB((w+1)*i+xStart, 35+yStart, w, h, buf, (14+i)*h*w, w);
+		}
+		//仰角
+		for (int i = 0; i < 6; i++) {
+			image.getRGB((w+1)*2*i+xStart, 52+yStart, w, h, buf, (17+i)*h*w, w);
+		}
+		return buf;
+	}	
+</pre>
+</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>simplefyDigits<a name="simplefyDigits"/></h2>
+<p><h4>参数:</h4>
+<p>int[] digits:数字图的具体像素表示。</p>
+</p>
+<p><h4>返回值:</h4>int[],数字图的简化表示(1,-1)。</p>
+<p><h4>描述:</h4>
+数字图的简化为1,-1的二值表示。
+</p>
+<p><h4>代码:</h4>
+<pre>
+public static int[] simplefyDigits(int[] digits){
+		int[] results = new int[digits.length];
+		for (int i = 0; i < digits.length; i++) {
+			if(digits[i]==0xffffffff){
+				results[i]=1;
+			}else if(digits[i]==0xff202020){
+				results[i]=-1;
+			}
+		}
+		return results;
+	}
+</pre>
+</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>getInfoInStrings<a name="getInfoInStrings"/></h2>
+<p><h4>参数:</h4>
+<p>BufferedImage image:原始的雷达图像,包含左边的雷达图显示部分,和右边的图像信息部分。</p>
+</p>
+<p><h4>返回值:</h4>String[],右边的图像信息部分的字符串表示。</p>
+<p><h4>描述:</h4>
+获取图片的数字信息的字符串表示。
+因为是字符串表示,所以保留前面的0,如"03"等等
+顺序依次为:年,月,日,时,分,秒,数据范围,仰角。
+仰角信息因为可能存在只含有2个或4个数字的情况,进行了区别对待。
+<p><h4>代码:</h4>
+<pre>
+public static String[] getInfoInStrings(BufferedImage image) {
+		int [] digitPixels = getDigitPixels(image);
+		digitPixels = simplefyDigits(digitPixels);
+		int[] numbers = new int[23];
+		for (int i = 0; i <19; i++) {
+			double[] input = new double[11*7];
+			for (int j = 0; j < input.length; j++) {
+				input[j]=digitPixels[i*11*7+j];
+			}
+			numbers[i] = DRUtils.recognize(input);
+		}
+		for (int i = 19; i < 23; i++) {
+			double[] input = new double[11*7];
+			boolean flag = false;
+			for (int j = 0; j < input.length; j++) {
+				input[j]=digitPixels[i*11*7+j];
+				if(input[j]<0&&!flag){
+					flag=true;
+				}
+			}
+			if(flag){
+				numbers[i] = DRUtils.recognize(input);
+			}else{
+				numbers[i]=-1;
+			}
+		}
+		String[] strs = new String[8];
+		strs[0]=numbers[0]+""+numbers[1]+""+numbers[2]+""+numbers[3];
+		strs[1]=numbers[4]+""+numbers[5];
+		strs[2]=numbers[6]+""+numbers[7];
+		strs[3]=numbers[8]+""+numbers[9];
+		strs[4]=numbers[10]+""+numbers[11];
+		strs[5]=numbers[12]+""+numbers[13];
+		strs[6]=numbers[14]+""+numbers[15]+""+numbers[16];
+		strs[7]=numbers[17]+"."+numbers[18];
+		if(numbers[19]>-1){
+			strs[7]+="_"+numbers[19]+"."+numbers[20];
+		}
+		if(numbers[21]>-1){
+			strs[7]+="_"+numbers[21]+"."+numbers[22];
+		}
+//		System.out.println(Arrays.toString(strs));
+		return strs;
+	}
+</pre>
+</p>
+</p>
+</hr>
+
+</HTML>

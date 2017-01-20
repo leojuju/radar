@@ -1,0 +1,73 @@
+<HTML>
+<meta charset="utf-8">
+<title>雷达拼图</title>
+<h1>雷达拼图</h1>
+<p>工程:radarImageAccessApi</p>
+<hr>
+<p>
+<h2>CONTENT</h2>
+<p><a href="#part1">一.Api入口</a><p/>
+<p><a href="#part2">二.获取相关站点雷达图</a><p/>
+<p><a href="#part3">三.拼图处理</a><p/>
+<p><a href="#part4">四.图片下采样</a><p/>
+<p><a href="#part5">五.Mercator投影变换</a><p/>
+<p><a href="#part6">六.其他处理</a><p/>
+</p>
+</hr>
+
+
+<hr>
+<p>
+<h2>一.Api入口<a name="part1"/></h2>
+<p>在application.api包下。</p>
+<p>类LocalRadarImageRequest:获取一个矩形区域的经纬度坐标。请求参数中startlat表示最小的纬度,endlat表示最大的纬度;startlongt,endlongt同理。time表示请求的雷达图时间。主要拼图程序在<a href="Jigsaw.html#jigsaw">Jigsaw.jigsaw<a/>内完成。请求返回的是拼图后的图像的二进制流数据。</p>
+<p>类ChinaRadarImageRequest:获取全中国区域的雷达拼图。请求参数只需要time表示请求的雷达图时间。固定拼图区域为经度70～140度,纬度15～55度。一样采用拼图程序<a href="Jigsaw.html#jigsaw">Jigsaw.jigsaw<a/>。请求返回的是拼图后的图像的二进制流数据。</p>
+<p>以下步骤都在<a href="Jigsaw.html#jigsaw">Jigsaw.jigsaw<a/>中。</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>二.获取相关站点雷达图<a name="part2"/></h2>
+<p>参照<a href="Jigsaw.html#jigsaw">Jigsaw.jigsaw</a>。</p>
+<p>首先,获取与请求区域相关的站点,即雷达图有重叠的站点(infrastruction.radarprocess.geo包下的<a href="GeoProcessForRadarImage.html#getNearbyStations">GeoProcessForRadarImage.getNearbyStations<a/>)。我的处理是比较请求区域中心和站点的地球表面距离,与请求区域对角线一半距离加上站点最大扫描范围range的距离之和。这其中条件我是有所放松的,如下图。不过后续处理可以很快地略去不必要的站点。</p>
+<img src="range.JPG" width=400 height=300/>
+<p>其次,根据获取的相关站点和请求的时间,获取相关的雷达图。这里就是直接的数据库查询了。注意我存储在mongodb中的数据经过Gzip压缩,应用时要记得解压缩。</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>三.拼图处理<a name="part3"/></h2>
+<p>参照<a href="Jigsaw.html#jigsaw">Jigsaw.jigsaw</a>。</p>
+<p><h4>首先,我们得确立一个底图来接受拼图。</h4></p>
+<p>由于各站点的图像分辨率不同(单位横向经度差与单位横向纬度差),为了保存足够的细节,底图我的分辨率采用了最小的0.005(latScale,longtScale)。然后可以计算出底图的高与宽(h,w)。<a href="MataData.html">MataData</a>::tarMataData是用来存储底图和拼图区域的相关信息的。</p>
+<p>初始化底图,值设为-1,表示目前没有数据。</p>
+<p><h4>其次,遍历每个相关站点雷达图,将雷达图拼到底图上去。</h4></p>
+<p>每个站点都会有个<a href="MataData.html">MataData</a>::mataData,描述自身雷达图的图像信息。这些信息对于每个站点来说是固定的,因此我将它们存与类<a href="MataDatas.html">MataDatas</a>中,在应用开始前会进行初始化。</p>
+<p>具体参照<a href="GridProcess.html#combine">GridProcess.combine</a>。</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>四.图片下采样<a name="part4"/></h2>
+<p>下采样,即缩小处理。适当的时候我们要对图像进行缩小,以便传输的图像不会太大。具体参照<a href="GridProcess.html#subSample">GridProcess.subSample</a>。</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>五.Mercator投影变换<a name="part5"/></h2>
+<p>百度地图和高德地图的相应图层接收的图像需要是经过Mercator投影的。具体参照<a href="MercatorProjection.html#transform">MercatorProjection.transform</a>。</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>六.其他处理<a name="part6"/></h2>
+<p>拼图是在雷达图的简化表示下进行的,要获取完整的图像,需要将简化表示转化为具体表示(<a href="../雷达图处理/RadarUtils.html#unsimplefy">RadarUtils.unsimplefy</a>,这里可以将无数据-1和数据为0的像素进行区分,但我没有做这个区分。),并进一步转化为图像数据的二进制流。</p>
+</p>
+</hr>
+
+</HTML>

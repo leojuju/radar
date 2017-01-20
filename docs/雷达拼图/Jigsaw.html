@@ -1,0 +1,96 @@
+<HTML>
+<meta charset="utf-8">
+<title>Jigsaw</title>
+<h1>Jigsaw</h1>
+<hr>
+<p>
+<h2>简述</h2>
+<p></p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>jigsaw<a name="jigsaw"/></h2>
+<p><h4>参数:</h4>
+<p>LatAndLongt startLAL:请求区域西北角。</p>
+<p>LatAndLongt endLAL:请求区域东南角。</p>
+<p>int scale:图像缩小倍数。</p>
+<p>long time:请求雷达图的时间。</p>
+<p>String requestID:请求ID</p>
+</p>
+<p><h4>返回值:</h4>
+byte[]:图像文件的二进制数组表示
+</p>
+<p><h4>描述:</h4>
+</p>
+<p><h4>代码:</h4>
+<pre>
+public static byte[] jigsaw(LatAndLongt startLAL, LatAndLongt endLAL, int scale, long time, String requestID) {
+		//获取请求区域内相关站点.
+		long startTime = System.currentTimeMillis();
+		List<String> searchStationIDs = GeoProcessForRadarImage.getNearbyStations(startLAL, endLAL);
+		logger.info("[RequestID:" + requestID + "] NearBy station num:" + searchStationIDs.size());
+		//请求数据库,获取该请求区域内相关站点的接近该时刻的可用图像.
+		Map<String, byte[]> results = RadarMongoDao.search(time, searchStationIDs, requestID);
+		logger.info("[RequestID:" + requestID + "] Available station num:" + results.size());
+		long endTime = System.currentTimeMillis();
+		logger.info("[RequestID:" + requestID + "] time for search pics:" + (endTime-startTime));
+		startTime = endTime;
+		//拼图处理:
+		double latScale = 0.005;
+		double longtScale = 0.005;
+		int h = (int) ((startLAL.latitude - endLAL.latitude) / latScale) + 1;
+		int w = (int) ((-startLAL.longtitude + endLAL.longtitude) / longtScale) + 1;
+		MataData tarMataData = new MataData("china", w, h, latScale, longtScale, startLAL, endLAL);
+		logger.info("[RequestID:" + requestID + "] Picture size before mercator projection:w=" + w + ",h=" + h + ".");
+			//创建一个空白底图.
+		byte[] chinaDetailMatrix = new byte[w * h];
+		for (int i = 0; i < h; i++) {
+			for (int j = 0; j < w; j++) {
+				//初始化,-1表示没有数据.
+				chinaDetailMatrix[i * w + j] = -1;
+			}
+		}
+		Set<String> stationIDs = results.keySet();
+		for (String stationID : stationIDs) {
+			byte[] matrix = null;
+			try {
+				matrix = Gzip.decompress(results.get(stationID));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			MataData mataData = MataDatas.mataDatas.get(stationID);
+			//将每个站的图像拼合到底图上.
+			GridProcess.combine(chinaDetailMatrix, tarMataData, matrix, mataData);
+		}
+		endTime = System.currentTimeMillis();
+		logger.info("[RequestID:" + requestID + "] time for pics combination:" + (endTime-startTime));
+		startTime = endTime;
+		// 图片下采样(即图像缩小).
+		byte[] chinaMatrix = null;
+		if (scale > 1) {
+			chinaMatrix = GridProcess.subSample(chinaDetailMatrix, tarMataData, scale);
+			w = tarMataData.w;
+			h = tarMataData.h;
+		} else {
+			chinaMatrix = chinaDetailMatrix;
+		}
+		// 针对baidu地图/高德地图进行Mercator投影变换
+		chinaMatrix = MercatorProjection.transform(chinaMatrix, tarMataData);
+		BufferedImage imageChina = RadarUtils.unsimplefy(chinaMatrix, w, chinaMatrix.length / w);
+		logger.info("[RequestID:" + requestID + "] Picture size after mercator projection:w=" + imageChina.getWidth()
+				+ ",h=" + imageChina.getHeight() + ".");
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		try {
+			ImageIO.write(imageChina, "gif", bos);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		endTime = System.currentTimeMillis();
+		logger.info("[RequestID:" + requestID + "] time for other porcess:" + (endTime-startTime));
+		return bos.toByteArray();
+	}
+</pre>
+</p>
+</hr>

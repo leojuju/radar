@@ -1,0 +1,100 @@
+<HTML>
+<meta charset="utf-8">
+<title>MercatorProjection</title>
+<h1>MercatorProjection</h1>
+<hr>
+<p>
+<h2>简述</h2>
+<p></p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>transFromLat<a name="transFromLat"/></h2>
+<p><h4>参数:</h4>
+<p>double lat:</p>
+</p>
+<p><h4>返回值:</h4>
+double:
+</p>
+<p><h4>描述:</h4>
+将纬度坐标转换为MercatorProjection坐标。
+</p>
+<p><h4>代码:</h4>
+<pre>
+public static double transFromLat(double lat){
+		return Math.log(Math.tan(Math.PI*(1.0/4.0+lat/180.0/2.0)))*180/Math.PI;
+	}
+</pre>
+</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>transToLat<a name="transToLat"/></h2>
+<p><h4>参数:</h4>
+<p>double mlat:</p>
+</p>
+<p><h4>返回值:</h4>
+double:
+</p>
+<p><h4>描述:</h4>
+将MercatorProjection坐标转换为纬度坐标。
+</p>
+<p><h4>代码:</h4>
+<pre>
+public static double transToLat(double mlat){
+		return Math.atan(Math.exp(mlat/180.0*Math.PI))*180.0*2/Math.PI-90.0;
+	}
+</pre>
+</p>
+</p>
+</hr>
+
+<hr>
+<p>
+<h2>transform<a name="transform"/></h2>
+<p><h4>参数:</h4>
+<p>byte[] matrix:原图。</p>
+<p>MataData tarMataData:原图的图像规格与地理信息。</p>
+</p>
+<p><h4>返回值:</h4>
+byte[]:新图。
+</p>
+<p><h4>描述:</h4>
+<p>MercatorProjection原理如下图:</p>
+<img src="MercatorProjection.JPG" width=400 height=300/>
+先获取新图地图;在扫描新图,去原图取值。
+</p>
+<p><h4>代码:</h4>
+<pre>
+public static byte[] transform(byte[] matrix,MataData mataData){
+		int w = mataData.w;
+		double latScale = mataData.latScale;
+		double startLat = transFromLat(mataData.endLAL.latitude);
+		double endLat = transFromLat(mataData.startLAL.latitude);
+		int h = (int)Math.round((endLat-startLat)/latScale);
+		
+		byte[] result = new byte[h*w];
+		
+		for (int i = 0; i &lt h; i++) {
+			double lat = transToLat(endLat-i*latScale);
+			int y = (int)Math.round((mataData.startLAL.latitude-lat)/latScale);
+			if(y>=mataData.h){
+				y=y-1;
+			}
+			for (int j = 0; j &lt w; j++) {
+				result[i*w+j]=matrix[y*w+j];
+			}
+		}
+		
+		return result;
+	}
+</pre>
+</p>
+</p>
+</hr>
+
+</html>
