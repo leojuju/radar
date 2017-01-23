@@ -1,4 +1,4 @@
-package infrastruction.redarprocess.geo;
+package infrastruction.radarprocess.geo;
 
 import infrastruction.radarprocess.Pixel;
 import infrastruction.radarprocess.algebra.Vector;

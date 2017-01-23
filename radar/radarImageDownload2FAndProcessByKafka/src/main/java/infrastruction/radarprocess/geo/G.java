@@ -1,4 +1,4 @@
-package infrastruction.redarprocess.geo;
+package infrastruction.radarprocess.geo;
 
 public class G {
 	//unit:km

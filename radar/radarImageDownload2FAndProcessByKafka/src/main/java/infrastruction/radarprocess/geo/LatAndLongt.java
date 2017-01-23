@@ -1,4 +1,4 @@
-package infrastruction.redarprocess.geo;
+package infrastruction.radarprocess.geo;
 
 import infrastruction.radarprocess.algebra.AngleFormat;
 import infrastruction.radarprocess.algebra.Vector;
