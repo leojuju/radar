@@ -40,11 +40,7 @@ public class StationsApi {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getRealTimeStations(){
-		String time = TimeUtils.getRealTimeOnGMT();
-		if(time==null){
-			System.out.println("Get RealTime from web failed,use local system time");
-			time = TimeUtils.getRealTimeOnGMTFromLocalSystem();
-		}
+		String time = TimeUtils.getRealTimeOnGMTFromLocalSystem();
 		Map<String,List<String>> map = StationsUtils.findStationLogsOn(time.substring(0, 8));
 		Set<String> stationIDs = map.keySet();
 		StringBuffer result = new StringBuffer();
