@@ -31,17 +31,17 @@ services:
     depends_on:
      - kafka
      - mongodb
-     - radar_imagedp2f
+     - radar_imagedp
     environment:
       MONGODB_SERVICE_HOST: mongodb
       MONGODB_SERVICE_PORT: 27017
       MONGODB_RADAR_DB_SPDATA: radardata_sp
       KAFKA_SERVICE_BOOTSTRAPSERVERS: kafka:9092
 
-  radar_imagedp2f:
+  radar_imagedp:
     build: DownloadAndProcess2File/.
-    image: radar_imagedp2f
-    container_name: radar_imagedp2f
+    image: radar_imagedp
+    container_name: radar_imagedp
     depends_on:
      - kafka
      - mongodb

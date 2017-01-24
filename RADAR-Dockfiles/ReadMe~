@@ -1,3 +1,4 @@
 docker-compose+2f.yml改变了radar_imagedp镜像，
-
-DownloadAndProcess2File
+使用DownloadAndProcess2File文件夹下dockerfile。
+就是添加了保存为文件的功能，故需要添加volumes。
+讲文件系统映射出来。

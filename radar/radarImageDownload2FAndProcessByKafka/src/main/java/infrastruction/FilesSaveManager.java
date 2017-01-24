@@ -19,14 +19,15 @@ public class FilesSaveManager {
 	
 	public static void saveSimpleProcessedRadarImage(BufferedImage image, String stationID, ImageInfo info){
 		Station station = Stations.stations.get(stationID);
-		String dir = station.province+"/"+station.name+"/"+info.time.getYearMonthString()+"/"
+		String dir = station.name+"/"+info.time.getYearMonthString()+"/"
 				+info.time.getDayString()+"/";
 		try {			
-			File file = new File(dir);
+			File file = new File(DIRPATH+dir);
 			if(!file.exists()){
 				file.mkdirs();
 			}
 			ImageIO.write(image, "gif", new File(DIRPATH+dir+info.getString()));
+			logger.info("Save image file to "+DIRPATH+dir+info.getString()+" succeed!");
 		} catch (Exception e) {
 			logger.info("Save image file to "+DIRPATH+dir+info.getString()+" failed!");
 		}
